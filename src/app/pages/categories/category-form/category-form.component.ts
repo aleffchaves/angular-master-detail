@@ -1,6 +1,7 @@
 import { AfterContentChecked, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 import { catchError, Observable, switchMap, throwError } from 'rxjs';
 import { Category } from '../shared/category.model';
 import { CategoryService } from '../shared/category.service';
@@ -21,8 +22,10 @@ export class CategoryFormComponent implements OnInit, AfterContentChecked{
 
   constructor(
     private activeRouter: ActivatedRoute,
+    private router: Router,
     private formBuilder: FormBuilder,
-    private categoryService: CategoryService) {}
+    private categoryService: CategoryService,
+    private toastr: ToastrService) {}
 
   ngOnInit(): void {
     this.setCurrentAction();
@@ -32,6 +35,14 @@ export class CategoryFormComponent implements OnInit, AfterContentChecked{
 
   ngAfterContentChecked(): void {
     this.setPageTitle();
+  }
+
+  onSubmmit(): void {
+    if (this.currentAction == 'new') {
+      this.createCategory();
+    } else if(this.currentAction == 'edit') {
+      this.updateCategory();
+    }
   }
 
   private setPageTitle(): void {
@@ -45,7 +56,6 @@ export class CategoryFormComponent implements OnInit, AfterContentChecked{
 
   private setCurrentAction(): void {
     if (this.activeRouter.snapshot.url[0].path == 'new') {
-      console.log(this.activeRouter.snapshot.url[0].path)
       this.currentAction = 'new';
     } else {
       this.currentAction = 'edit';
@@ -74,12 +84,43 @@ export class CategoryFormComponent implements OnInit, AfterContentChecked{
 
         error: () => alert('Ocorreu algum error no servidor. Volte em alguns instantes.')
         });
-
       }
   }
 
   private handlerError(error: any): Observable<any> {
     console.log('Error na requisição => ', error);
     return throwError(() => error);
+  }
+
+  private createCategory(): void {
+    const category: Category = Object.assign(new Category, this.categoryForm.value);
+
+    this.categoryService.create(category).subscribe({
+      next: (category) => this.actionForSuccess(category),
+      error: (err) => this.actionForError(err)
+    });
+  }
+
+  private updateCategory(): void {
+    const category: Category = Object.assign(new Category, this.categoryForm.value);
+
+    this.categoryService.update(category).subscribe({
+      next: (category) => this.actionForSuccess(category),
+      error: (err) => this.actionForError(err)
+    });
+  }
+
+  private actionForSuccess(category: Category): void {
+    this.toastr.success("Solicitação processada com sucesso!");
+
+    this.router.navigateByUrl('categories', {skipLocationChange: true}).then(
+      () => this.router.navigate(['categories', category.id, 'edit'])
+    );
+  }
+
+  private actionForError(error: any): void {
+    this.toastr.error("Ocorreu um erro ao processar a sua solicitação!");
+
+    this.submittingForm = false;
   }
 }

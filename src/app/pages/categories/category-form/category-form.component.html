@@ -3,7 +3,7 @@
             <ol class="breadcrumb">
             <li class="breadcrumb-item"><a routerLink="/">Home</a></li>
             <li class="breadcrumb-item"><a routerLink="/categories">Categorias</a></li>
-            <li class="breadcrumb-item active">Formulário de categoria</li>
+            <li class="breadcrumb-item active">{{ pageTitle }}</li>
             </ol>
         </nav>
         <div class="row mb-4">
@@ -19,8 +19,7 @@
             </div>
         </div>
 
-
-    <form [formGroup]="categoryForm">
+    <form [formGroup]="categoryForm" (submit)="onSubmmit()">
 
         <div class="card">
             <div class="card-header">
@@ -30,18 +29,22 @@
                 <div class="form-row">
                     <div class="form-group col-md-4">
                         <label for="name">Nome</label>
-                        <input type="text" class="form-control" id="name">
+                        <input type="text" class="form-control" id="name" formControlName="name">
+
+                        <div class="text-danger"  *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched">
+                            <div *ngIf="categoryForm.get('name')?.errors?.['required']">Dado obrigatório</div>
+                            <div *ngIf="categoryForm.get('name')?.errors?.['minlenght']">Campo deve ter no mínimo 2 caracteres</div>
+                        </div>
                     </div>
 
                     <div class="form-group col-md-8">
                         <label for="description">Descrição</label>
-                        <input type="text" class="form-control" id="description">
+                        <input type="text" class="form-control" id="description" formControlName="description">
                     </div>
                 </div>
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-lg float-right mt-3">Salvar</button>
-
+        <button [disabled]="submittingForm || categoryForm.invalid" type="submit" class="btn btn-primary btn-lg float-right mt-3">Salvar</button>
     </form>
 </div>
