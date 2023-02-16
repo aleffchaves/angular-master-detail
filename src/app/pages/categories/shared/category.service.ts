@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, elementAt, map, Observable, throwError } from 'rxjs';
+import { catchError, map, Observable, throwError } from 'rxjs';
 import { Category } from './category.model';
 
 @Injectable({
@@ -44,7 +44,7 @@ export class CategoryService {
     );
   }
 
-  delete(id: number): Observable<any> {
+  delete(id: any): Observable<any> {
     const url = `${this.apiPath}/${id}`;
 
     return this.httpClient.delete(url).pipe(
@@ -59,7 +59,7 @@ export class CategoryService {
 
   private jsonDataToCategories(jsonData: any[]) {
     const categories: Category[] = [];
-    jsonData.forEach(element => categories.push(jsonData as Category));
+    jsonData.forEach(element => categories.push(element as Category));
     return categories;
   }
 
@@ -67,5 +67,4 @@ export class CategoryService {
     console.log("Error na requisição => ", error);
     return throwError(() => error);
   }
-
 }
