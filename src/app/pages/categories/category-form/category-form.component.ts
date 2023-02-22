@@ -76,7 +76,7 @@ export class CategoryFormComponent implements OnInit, AfterContentChecked{
         this.activeRouter.paramMap.pipe(
           catchError(this.handlerError),
           switchMap(params => this.categoryService.getById(+params.get('id')))
-          
+
         ).subscribe({next: (category) => {
           this.category = category;
           this.categoryForm?.patchValue(category);

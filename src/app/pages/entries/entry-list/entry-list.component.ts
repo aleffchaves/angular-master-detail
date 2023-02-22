@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { Entry } from '../shared/entry.model';
-import { EntryService } from '../shared/entry.service';
+import {Component, OnInit} from '@angular/core';
+import {Entry} from '../shared/entry.model';
+import {EntryService} from '../shared/entry.service';
 
 @Component({
   selector: 'app-entry-list',
@@ -18,10 +18,9 @@ export class EntryListComponent implements OnInit{
       next: (entries) => this.entries = entries,
       error: (error) => alert("Error ao listar lançamentos!" + error)
     })
-    console.log(this.entries.values)
   }
 
-  deleteEntry(entry: Entry) {
+  deleteEntry(entry: Entry): void {
     const mustDelete = confirm("Deseja realmente deletar?");
 
     if (mustDelete) {
