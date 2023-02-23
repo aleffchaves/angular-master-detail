@@ -1,70 +1,14 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { catchError, map, Observable, throwError } from 'rxjs';
-import { Category } from './category.model';
+import {Injectable, Injector} from '@angular/core';
+import {Category} from './category.model';
+import {BaseResourceService} from "../../../shared/services/base-resource.service";
 
 @Injectable({
   providedIn: 'root'
 })
-export class CategoryService {
+export class CategoryService extends BaseResourceService<Category> {
 
-  private apiPath: string = "api/categories";
-
-  constructor(private httpClient: HttpClient) { }
-
-  getAll(): Observable<Category[]> {
-    return this.httpClient.get(this.apiPath).pipe(
-      catchError(this.handlerError),
-      map(this.jsonDataToCategories)
-    );
+  constructor(protected override injector: Injector){
+    super('/api/categories',injector, Category.fromJson);
   }
 
-  getById(id: number | undefined): Observable<Category> {
-    const url = `${this.apiPath}/${id}`;
-
-    return this.httpClient.get(url).pipe(
-      catchError(this.handlerError),
-      map(this.jsonDataToCategory)
-    );
-  }
-
-  create(category: Category): Observable<Category> {
-    return this.httpClient.post(this.apiPath, category).pipe(
-      catchError(this.handlerError),
-      map(this.jsonDataToCategory)
-    );
-  }
-
-  update(category: Category): Observable<Category> {
-    const url = `${this.apiPath}/${category?.id}`;
-
-    return this.httpClient.put(url, category).pipe(
-      catchError(this.handlerError),
-      map(() => category)
-    );
-  }
-
-  delete(id: any): Observable<any> {
-    const url = `${this.apiPath}/${id}`;
-
-    return this.httpClient.delete(url).pipe(
-      catchError(this.handlerError),
-      map(() => null)
-    )
-  }
-
-  private jsonDataToCategory(jsonData: any) {
-    return jsonData as Category;
-  }
-
-  private jsonDataToCategories(jsonData: any[]) {
-    const categories: Category[] = [];
-    jsonData.forEach(element => categories.push(element as Category));
-    return categories;
-  }
-
-  private handlerError(error: any): Observable<any> {
-    console.log("Error na requisição => ", error);
-    return throwError(() => error);
-  }
 }
