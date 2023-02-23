@@ -1,22 +1,18 @@
-import {AfterContentChecked, Component, Injector, OnInit} from '@angular/core';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {AfterContentChecked, Directive, Injector, OnInit} from '@angular/core';
+import {FormBuilder, FormGroup} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ToastrService} from 'ngx-toastr';
 import {catchError, Observable, switchMap, throwError} from 'rxjs';
 import {BaseResourceModel} from "../../models/base-resource.model";
 import {BaseResourceService} from "../../services/base-resource.service";
 
-@Component({
-  selector: 'app-category-form',
-  templateUrl: './category-form.component.html',
-  styleUrls: ['./category-form.component.css']
-})
+@Directive()
 export abstract class BaseResourceFormComponent<T extends BaseResourceModel> implements OnInit, AfterContentChecked{
 
   currentAction!: string;
   resourceForm!: FormGroup;
-  pageTitle: string | undefined;
-  serverErrorMessage: string[] | undefined;
+  pageTitle!: string;
+  serverErrorMessage!: string[];
   submittingForm: boolean = false;
 
   protected activeRouter: ActivatedRoute;
@@ -26,9 +22,10 @@ export abstract class BaseResourceFormComponent<T extends BaseResourceModel> imp
   protected constructor(
     protected injector: Injector,
     protected resource: T,
-    protected resourceService: BaseResourceService<T>,
+    protected baseResourceService: BaseResourceService<T>,
     protected jsonDataToResourceFn: (jsonData: any) => T,
-    protected toastr: ToastrService) {
+    protected toastr: ToastrService
+  ) {
 
     this.router = this.injector.get(Router);
     this.activeRouter = this.injector.get(ActivatedRoute);
@@ -53,16 +50,24 @@ export abstract class BaseResourceFormComponent<T extends BaseResourceModel> imp
     }
   }
 
+  protected setCurrentAction(): void {
+    if (this.activeRouter.snapshot.url[0].path == 'new') {
+      this.currentAction = 'new';
+    } else {
+      this.currentAction = 'edit';
+    }
+  }
+
   protected loadResource(): void {
     if (this.currentAction == 'edit') {
 
       this.activeRouter.paramMap.pipe(
         catchError(this.handlerError),
-        switchMap(params => this.resourceService.getById(+params.get('id')))
+        switchMap(params => this.baseResourceService.getById(+params.get('id')))
 
       ).subscribe({next: (resource) => {
           this.resource = resource;
-          this.resourceForm?.patchValue(resource);
+          this.resourceForm.patchValue(resource);
         },
 
         error: () => alert('Ocorreu algum error no servidor. Volte em alguns instantes.')
@@ -78,20 +83,21 @@ export abstract class BaseResourceFormComponent<T extends BaseResourceModel> imp
     }
   }
 
-  protected setCurrentAction(): void {
-    if (this.activeRouter.snapshot.url[0].path == 'new') {
-      this.currentAction = 'new';
-    } else {
-      this.currentAction = 'edit';
-    }
+
+  protected creationPageTitle(): string {
+    return "Novo";
   }
 
-  protected abstract buildResourceForm(): void;
+  protected editionPageTitle(): string {
+    return "Edição";
+  }
 
   protected createResource(): void {
     const resource: T = this.jsonDataToResourceFn(this.resourceForm.value)
 
-    this.resourceService.create(resource).subscribe({
+    console.log(this.jsonDataToResourceFn(this.resourceForm.value));
+
+    this.baseResourceService.create(resource).subscribe({
       next: (resource) => this.actionForSuccess(resource),
       error: (err) => this.actionForError(err)
     });
@@ -100,7 +106,9 @@ export abstract class BaseResourceFormComponent<T extends BaseResourceModel> imp
   protected updateResource(): void {
     const resource: T = this.jsonDataToResourceFn(this.resourceForm.value)
 
-    this.resourceService.update(resource).subscribe({
+    console.log(this.jsonDataToResourceFn(this.resourceForm.value));
+
+    this.baseResourceService.update(resource).subscribe({
       next: (resource) => this.actionForSuccess(resource),
       error: (err) => this.actionForError(err)
     });
@@ -132,15 +140,8 @@ export abstract class BaseResourceFormComponent<T extends BaseResourceModel> imp
   }
 
   protected handlerError(error: any): Observable<any> {
-    console.log('Error na requisição => ', error);
     return throwError(() => error);
   }
 
-  protected creationPageTitle(): string {
-    return "Novo";
-  }
-
-  private editionPageTitle(): string {
-    return "Edição";
-  }
+  protected abstract buildResourceForm(): void;
 }
