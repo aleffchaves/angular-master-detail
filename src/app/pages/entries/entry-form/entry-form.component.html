@@ -1,7 +1,6 @@
 <div class="container">
   <app-bread-crumb [items]="[{text: 'Lançamentos', link: '/entries'}, {text: pageTitle}]" ></app-bread-crumb>
 
-
   <page-header
     [page-title]="pageTitle"
     button-text="Voltar"
@@ -35,6 +34,9 @@
           <div class="form-group col-md-5">
             <label for="name">Lançamento</label>
             <input type="text" class="form-control" id="name" formControlName="name">
+
+<!--            Aqui poderiamos usar essa linha componetizada ao invés das validações abaixo-->
+<!--                        <form-field-error *ngIf="resourceForm.get('name')"></form-field-error>-->
 
             <div class="text-danger" *ngIf="resourceForm.get('name')?.invalid && resourceForm.get('name')?.touched">
               <div *ngIf="resourceForm.get('name')?.errors?.['required']">Dado obrigatório</div>
@@ -116,15 +118,9 @@
       </div>
     </div>
 
-    <div class="alert alert-danger mt-4" *ngIf="serverErrorMessage">
-      <strong>Internal Server Error</strong>
-      <ul>
-        <li *ngFor="let item of serverErrorMessage">{{item}}</li>
-      </ul>
-    </div>
+    <server-error-messages  [server-error-messages]="serverErrorMessage"></server-error-messages>
 
     <button [disabled]="submittingForm || resourceForm.invalid" type="submit" class="btn btn-primary btn-lg float-right mt-3">Salvar</button>
   </form>
 
-  <pre>{{resourceForm.value | json}}</pre>
 </div>
