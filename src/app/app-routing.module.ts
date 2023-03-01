@@ -14,6 +14,9 @@ const routes: Routes = [
   {
     path: 'reports',
     loadChildren: () => import ('./pages/reports/reports.module').then(res => res.ReportsModule)
+  },
+  {
+    path: '', redirectTo: 'reports', pathMatch: "full"
   }
 ];
 

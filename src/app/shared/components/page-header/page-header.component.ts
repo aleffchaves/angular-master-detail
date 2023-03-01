@@ -9,6 +9,7 @@ export class PageHeaderComponent {
 
   @Input('page-title') pageTitle!: string;
   @Input('button-class') buttonClass!: string;
+  @Input('show-button') showButton: boolean = true;
   @Input('button-text') buttonText!: string;
   @Input('button-link') buttonLink!: string;
 
